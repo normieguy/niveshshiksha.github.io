@@ -1,40 +1,310 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Nivesh Shiksha</title>
-    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-  </head>
-  <body class="bg-gray-100 min-h-screen flex items-center justify-center">
-    <div id="root"></div>
-    <script>
-      const { useState, useEffect } = React;
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nivesh Shiksha</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
 
-      function App() {
-        const [count, setCount] = useState(0);
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+    const { createRoot } = ReactDOM;
 
-        return React.createElement(
-          "div",
-          { className: "p-8 bg-white shadow-xl rounded-2xl text-center" },
-          React.createElement("h1", { className: "text-2xl font-bold mb-4" }, "Nivesh Shiksha"),
-          React.createElement("p", { className: "mb-4" }, "Quick demo without Babel"),
-          React.createElement(
-            "button",
+    const educationalContent = {
+      en: [
+        {
+          id: 1,
+          title: "Financial Fundamentals",
+          content:
+            "Learn about saving vs investing, compounding, inflation, and risk-return trade-offs.",
+          quiz: [
             {
-              className:
-                "px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600",
-              onClick: () => setCount(count + 1),
+              question: "What is compounding?",
+              options: [
+                "Earning interest on interest",
+                "Saving money in a bank",
+                "Buying stocks",
+                "Paying taxes",
+              ],
+              answer: 0,
             },
-            `Clicked ${count} times`
-          )
-        );
-      }
+          ],
+        },
+        {
+          id: 2,
+          title: "Stock Market Basics",
+          content:
+            "Understand SEBI, stock exchanges (BSE, NSE), shares, IPOs, and market indexes like Sensex and Nifty.",
+          quiz: [
+            {
+              question: "What does SEBI regulate?",
+              options: ["Stock market", "Real estate", "Banking", "Insurance"],
+              answer: 0,
+            },
+          ],
+        },
+      ],
+      hi: [
+        {
+          id: 1,
+          title: "वित्तीय मूल बातें",
+          content:
+            "बचत और निवेश, चक्रवृद्धि ब्याज, मुद्रास्फीति, और जोखिम-लाभ समझें।",
+          quiz: [
+            {
+              question: "चक्रवृद्धि ब्याज क्या है?",
+              options: [
+                "ब्याज पर ब्याज कमाना",
+                "बैंक में पैसे बचाना",
+                "शेयर खरीदना",
+                "कर देना",
+              ],
+              answer: 0,
+            },
+          ],
+        },
+        {
+          id: 2,
+          title: "शेयर बाजार की मूल बातें",
+          content:
+            "SEBI, शेयर बाजार (BSE, NSE), शेयर, IPO, और Sensex और Nifty के बारे में जानें।",
+          quiz: [
+            {
+              question: "SEBI क्या नियंत्रित करता है?",
+              options: ["शेयर बाजार", "रियल एस्टेट", "बैंकिंग", "बीमा"],
+              answer: 0,
+            },
+          ],
+        },
+      ],
+    };
 
-      const root = ReactDOM.createRoot(document.getElementById("root"));
-      root.render(React.createElement(App));
-    </script>
-  </body>
-</html>
+    const delayedPriceData = [
+      { price: 100 }, { price: 102 }, { price: 101 }, { price: 103 }, { price: 105 },
+      { price: 104 }, { price: 106 }, { price: 108 }, { price: 107 }, { price: 109 },
+      { price: 110 }, { price: 111 }, { price: 109 }, { price: 108 }, { price: 110 },
+    ];
+
+    const checkIcon = (
+      <svg className="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+      </svg>
+    );
+
+    const crossIcon = (
+      <svg className="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    );
+
+    const App = () => {
+      const [language, setLanguage] = useState("en");
+      const [selectedModule, setSelectedModule] = useState(null);
+      const [quizIndex, setQuizIndex] = useState(0);
+      const [quizScore, setQuizScore] = useState(0);
+      const [showQuiz, setShowQuiz] = useState(false);
+      const [quizAnswered, setQuizAnswered] = useState(false);
+      const [selectedOption, setSelectedOption] = useState(null);
+      const [messageBox, setMessageBox] = useState({ visible: false, title: "", content: "" });
+
+      const [virtualBalance, setVirtualBalance] = useState(10000);
+      const [virtualHoldings, setVirtualHoldings] = useState(0);
+      const [priceIndex, setPriceIndex] = useState(0);
+      const [currentPrice, setCurrentPrice] = useState(delayedPriceData[0].price);
+      const [tradeLog, setTradeLog] = useState([]);
+      const [priceHistory, setPriceHistory] = useState(delayedPriceData);
+
+      useEffect(() => {
+        const interval = setInterval(() => {
+          setPriceIndex((idx) => {
+            const nextIdx = (idx + 1) % delayedPriceData.length;
+            const newPrice = delayedPriceData[nextIdx].price;
+            setCurrentPrice(newPrice);
+            setPriceHistory((history) => [...history.slice(-20), { price: newPrice }]);
+            return nextIdx;
+          });
+        }, 5000);
+        return () => clearInterval(interval);
+      }, []);
+
+      const startModule = (module) => {
+        setSelectedModule(module);
+        setQuizIndex(0);
+        setQuizScore(0);
+        setShowQuiz(true);
+        setQuizAnswered(false);
+        setSelectedOption(null);
+      };
+
+      const answerQuiz = (optionIndex) => {
+        if (quizAnswered) return;
+        setSelectedOption(optionIndex);
+        setQuizAnswered(true);
+        if (optionIndex === selectedModule.quiz[quizIndex].answer) {
+          setQuizScore((score) => score + 1);
+        }
+      };
+
+      const nextQuiz = () => {
+        if (quizIndex + 1 < selectedModule.quiz.length) {
+          setQuizIndex(quizIndex + 1);
+          setQuizAnswered(false);
+          setSelectedOption(null);
+        } else {
+          setShowQuiz(false);
+          setMessageBox({
+            visible: true,
+            title: "Module Completed!",
+            content: `Your score: ${quizScore} / ${selectedModule.quiz.length}`,
+          });
+          setSelectedModule(null);
+        }
+      };
+
+      const buyStock = () => {
+        if (virtualBalance < currentPrice) {
+          setMessageBox({ visible: true, title: "Trade Failed", content: "Insufficient balance to buy 1 unit." });
+          return;
+        }
+        setVirtualBalance((bal) => bal - currentPrice);
+        setVirtualHoldings((hold) => hold + 1);
+        setTradeLog((log) => [...log, { type: "Buy", price: currentPrice, time: new Date().toLocaleTimeString("en-IN", { hour12: false }) }]);
+      };
+
+      const sellStock = () => {
+        if (virtualHoldings < 1) {
+          setMessageBox({ visible: true, title: "Trade Failed", content: "No holdings to sell." });
+          return;
+        }
+        setVirtualBalance((bal) => bal + currentPrice);
+        setVirtualHoldings((hold) => hold - 1);
+        setTradeLog((log) => [...log, { type: "Sell", price: currentPrice, time: new Date().toLocaleTimeString("en-IN", { hour12: false }) }]);
+      };
+
+      const portfolioValue = virtualBalance + virtualHoldings * currentPrice;
+      const maxPrice = Math.max(...priceHistory.map(d => d.price));
+      const minPrice = Math.min(...priceHistory.map(d => d.price));
+      const priceRange = maxPrice - minPrice;
+
+      return (
+        <div className="min-h-screen bg-gray-100 font-sans text-gray-800 p-4 sm:p-8">
+          <div className="max-w-6xl mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden">
+
+            <header className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 md:p-8 text-center rounded-t-3xl shadow-inner">
+              <h1 className="text-3xl sm:text-4xl font-extrabold mb-1">Nivesh Shiksha</h1>
+              <p className="text-sm sm:text-base opacity-90">Investment Education & Virtual Trading Simulator</p>
+              <div className="mt-4 flex justify-center">
+                <label htmlFor="language" className="mr-2 font-semibold flex items-center">Select Language:</label>
+                <select id="language" value={language} onChange={(e) => setLanguage(e.target.value)} className="border border-white/50 bg-transparent text-white rounded-lg p-1">
+                  <option value="en" className="text-black">English</option>
+                  <option value="hi" className="text-black">हिन्दी (Hindi)</option>
+                </select>
+              </div>
+            </header>
+
+            <main className="p-6 md:p-10 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+              <section className="bg-gray-50 p-6 rounded-2xl shadow-lg transition-transform transform hover:scale-105">
+                <h2 className="text-2xl font-bold mb-4 text-gray-900">Educational Modules</h2>
+                {!selectedModule && (
+                  <ul className="space-y-4">
+                    {educationalContent[language].map((mod) => (
+                      <li key={mod.id} className="cursor-pointer p-4 border border-gray-200 rounded-xl bg-white transition-all duration-300 transform hover:shadow-xl hover:-translate-y-1" onClick={() => startModule(mod)}>
+                        <h3 className="font-bold text-lg text-blue-700">{mod.title}</h3>
+                        <p className="text-sm text-gray-600 mt-1">{mod.content}</p>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                {selectedModule && showQuiz && (
+                  <div>
+                    <h3 className="font-bold text-xl text-blue-800 mb-4">Quiz: {selectedModule.quiz[quizIndex].question}</h3>
+                    <ul className="space-y-3">
+                      {selectedModule.quiz[quizIndex].options.map((opt, i) => (
+                        <li key={i}>
+                          <button onClick={() => answerQuiz(i)} className={`w-full flex items-center p-3 border rounded-xl text-left transition-all duration-300 ${quizAnswered ? (i === selectedModule.quiz[quizIndex].answer ? "bg-green-100 border-green-400 text-green-800" : i === selectedOption ? "bg-red-100 border-red-400 text-red-800" : "bg-gray-100 border-gray-200 text-gray-600") : "bg-white border-gray-300 hover:bg-gray-200"}`}>
+                            <span className="flex-1">{opt}</span>
+                            {quizAnswered && (i === selectedModule.quiz[quizIndex].answer ? checkIcon : (i === selectedOption && crossIcon))}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                    {quizAnswered && (
+                      <button onClick={nextQuiz} className="mt-6 w-full bg-purple-600 text-white font-semibold py-3 rounded-xl transition-colors hover:bg-purple-700 focus:outline-none focus:ring-4 focus:ring-purple-300">
+                        {quizIndex + 1 < selectedModule.quiz.length ? "Next Question" : "Finish Module"}
+                      </button>
+                    )}
+                  </div>
+                )}
+              </section>
+
+              <section className="bg-gray-50 p-6 rounded-2xl shadow-lg transition-transform transform hover:scale-105">
+                <h2 className="text-2xl font-bold mb-4 text-gray-900">Virtual Trading Simulator</h2>
+                <div className="space-y-3 mb-6 bg-white p-4 rounded-xl shadow">
+                  <p className="flex justify-between items-center text-lg font-medium"><strong>Current Price:</strong> <span className="text-green-600 font-bold transition-colors animate-pulse">₹{currentPrice.toFixed(2)}</span></p>
+                  <p className="flex justify-between items-center text-lg font-medium"><strong>Virtual Balance:</strong> <span className="text-blue-600 font-bold">₹{virtualBalance.toFixed(2)}</span></p>
+                  <p className="flex justify-between items-center text-lg font-medium"><strong>Holdings:</strong> <span className="text-purple-600 font-bold">{virtualHoldings} units</span></p>
+                  <p className="flex justify-between items-center text-lg font-medium"><strong>Portfolio Value:</strong> <span className="text-gray-900 font-bold">₹{portfolioValue.toFixed(2)}</span></p>
+                </div>
+
+                <div className="bg-white p-4 rounded-xl shadow mb-6">
+                  <h3 className="font-bold text-lg text-center mb-2">Price History</h3>
+                  <div className="h-40 flex items-end border-b-2 border-gray-300">
+                    {priceHistory.map((data, index) => {
+                      const heightPercentage = priceRange > 0 ? ((data.price - minPrice) / priceRange) * 100 : 0;
+                      return (
+                        <div key={index} className="w-3 mx-0.5 bg-blue-500 rounded-t-sm" style={{ height: `${heightPercentage}%` }}></div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="flex space-x-4 mb-6">
+                  <button onClick={buyStock} className="flex-1 bg-green-500 text-white font-semibold py-3 rounded-xl transition-all duration-300 transform hover:scale-105 hover:bg-green-600 focus:outline-none focus:ring-4 focus:ring-green-300">Buy 1 Unit</button>
+                  <button onClick={sellStock} className="flex-1 bg-red-500 text-white font-semibold py-3 rounded-xl transition-all duration-300 transform hover:scale-105 hover:bg-red-600 focus:outline-none focus:ring-4 focus:ring-red-300">Sell 1 Unit</button>
+                </div>
+
+                <div>
+                  <h3 className="font-bold text-lg mb-2">Trade Log</h3>
+                  {tradeLog.length === 0 && <p className="text-gray-600 italic">No trades executed yet.</p>}
+                  <ul className="max-h-40 overflow-auto border border-gray-300 rounded-xl p-3 bg-white space-y-2">
+                    {tradeLog.map((trade, i) => (
+                      <li key={i} className={`p-2 rounded-lg text-sm ${trade.type === "Buy" ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"}`}>
+                        <span className="font-medium">[{trade.time}]</span> {trade.type} @ ₹{trade.price.toFixed(2)}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </section>
+            </main>
+
+            {messageBox.visible && (
+              <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4">
+                <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8 max-w-sm w-full text-center">
+                  <h3 className="text-2xl font-bold mb-3">{messageBox.title}</h3>
+                  <p className="text-lg text-gray-700 mb-6">{messageBox.content}</p>
+                  <button onClick={() => setMessageBox({ ...messageBox, visible: false })} className="w-full bg-blue-600 text-white font-semibold py-3 rounded-xl transition-colors hover:bg-blue-700">OK</button>
+                </div>
+              </div>
+            )}
+
+            <footer className="mt-8 text-center text-gray-500 text-sm p-4">&copy; 2024 Nivesh Shiksha - Prototype for Financial Literacy & Virtual Trading</footer>
+          </div>
+        </div>
+      );
+    };
+
+    const root = createRoot(document.getElementById('root'));
+    root.render(<App />);
+ 
